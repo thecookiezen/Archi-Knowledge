@@ -3,7 +3,6 @@ package com.example.memory.infrastructure.persistence.neo4j;
 import com.example.memory.domain.model.Entity;
 import com.example.memory.domain.model.Relation;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
@@ -38,8 +37,7 @@ class Neo4jKnowledgeGraphRepositoryAdapterTest {
             TestPropertyValues.of(
                     "spring.neo4j.uri=" + embeddedDatabaseServer.boltURI().toString(),
                     "spring.neo4j.authentication.username=neo4j",
-                    "spring.neo4j.authentication.password=password"
-            ).applyTo(applicationContext.getEnvironment());
+                    "spring.neo4j.authentication.password=password").applyTo(applicationContext.getEnvironment());
         }
     }
 
@@ -61,7 +59,7 @@ class Neo4jKnowledgeGraphRepositoryAdapterTest {
         List<Entity> results = repository.findAllEntities();
         assertFalse(results.isEmpty());
         boolean found = results.stream().anyMatch(e -> e.name().equals("IntegrationTest"));
-        assert(found);
+        assert (found);
     }
 
     @Test
@@ -77,6 +75,6 @@ class Neo4jKnowledgeGraphRepositoryAdapterTest {
         List<Relation> relations = repository.findAllRelations();
         boolean found = relations.stream()
                 .anyMatch(r -> r.from().equals("N1") && r.to().equals("N2") && r.relationType().equals("TEST_REL"));
-        assert(found);
+        assert (found);
     }
 }

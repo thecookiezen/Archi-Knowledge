@@ -6,8 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryKnowledgeGraphRepositoryTest {
@@ -53,7 +51,7 @@ class InMemoryKnowledgeGraphRepositoryTest {
     void deleteEntity() {
         repository.saveEntity(new Entity("test", "concept"));
         repository.saveRelation(new Relation("test", "other", "rel"));
-        
+
         repository.deleteEntity("test");
 
         assertTrue(repository.findAllEntities().isEmpty());

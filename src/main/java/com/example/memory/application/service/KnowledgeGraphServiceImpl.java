@@ -1,6 +1,7 @@
 package com.example.memory.application.service;
 
 import com.example.memory.domain.model.Entity;
+import com.example.memory.domain.model.EntityId;
 import com.example.memory.domain.model.Relation;
 import com.example.memory.domain.repository.KnowledgeGraphRepository;
 import org.springframework.stereotype.Service;
@@ -46,9 +47,9 @@ public class KnowledgeGraphServiceImpl implements KnowledgeGraphService {
     }
 
     @Override
-    public void deleteEntities(List<String> names) {
-        for (String name : names) {
-            repository.deleteEntity(name);
+    public void deleteEntities(List<EntityId> ids) {
+        for (EntityId id : ids) {
+            repository.deleteEntity(id);
         }
     }
 

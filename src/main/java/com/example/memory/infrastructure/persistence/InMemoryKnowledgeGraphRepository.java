@@ -1,6 +1,7 @@
 package com.example.memory.infrastructure.persistence;
 
 import com.example.memory.domain.model.Entity;
+import com.example.memory.domain.model.EntityId;
 import com.example.memory.domain.model.Relation;
 import com.example.memory.domain.repository.KnowledgeGraphRepository;
 import org.springframework.context.annotation.Profile;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 @Repository
 @Profile("default")
 public class InMemoryKnowledgeGraphRepository implements KnowledgeGraphRepository {
-    private final Map<String, Entity> entities = new ConcurrentHashMap<>();
+    private final Map<EntityId, Entity> entities = new ConcurrentHashMap<>();
     private final List<Relation> relations = new ArrayList<>();
 
     @Override
@@ -50,15 +51,15 @@ public class InMemoryKnowledgeGraphRepository implements KnowledgeGraphRepositor
     @Override
     public List<Entity> searchEntities(String query) {
         return entities.values().stream()
-                .filter(e -> e.name().toLowerCase().contains(query.toLowerCase()) || 
-                             e.type().toLowerCase().contains(query.toLowerCase()))
+                .filter(e -> e.name().value().toLowerCase().contains(query.toLowerCase()) || 
+                             e.type().value().toLowerCase().contains(query.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteEntity(String name) {
-        entities.remove(name);
-        relations.removeIf(r -> r.from().equals(name) || r.to().equals(name));
+    public void deleteEntity(EntityId id) {
+        entities.remove(id);
+        relations.removeIf(r -> r.from().equals(id) || r.to().equals(id));
     }
 
     @Override

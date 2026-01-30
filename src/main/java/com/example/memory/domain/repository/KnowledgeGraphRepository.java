@@ -1,6 +1,7 @@
 package com.example.memory.domain.repository;
 
 import com.example.memory.domain.model.Entity;
+import com.example.memory.domain.model.EntityId;
 import com.example.memory.domain.model.Relation;
 
 import java.util.List;
@@ -13,6 +14,6 @@ public interface KnowledgeGraphRepository {
     List<Relation> findAllRelations();
     Map<String, Object> getGraph();
     List<Entity> searchEntities(String query);
-    void deleteEntity(String name);
+    void deleteEntity(EntityId id);
     void deleteRelation(Relation relation);
 }

@@ -2,6 +2,7 @@ package com.example.memory.infrastructure.mcp;
 
 import com.example.memory.application.service.KnowledgeGraphService;
 import com.example.memory.domain.model.Entity;
+import com.example.memory.domain.model.EntityId;
 import com.example.memory.domain.model.Relation;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class McpToolAdapter {
@@ -41,7 +43,10 @@ public class McpToolAdapter {
 
     @Tool(name = "delete_entities", description = "Delete entities from the knowledge graph by their names.")
     public void deleteEntities(@ToolParam(description = "List of entity names to delete") List<String> names) {
-        knowledgeGraphService.deleteEntities(names);
+        List<EntityId> ids = names.stream()
+                .map(EntityId::new)
+                .collect(Collectors.toList());
+        knowledgeGraphService.deleteEntities(ids);
     }
     
     @Tool(name = "delete_relations", description = "Delete relations from the knowledge graph.")
