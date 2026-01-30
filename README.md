@@ -1,8 +1,6 @@
 # Memory MCP Server
 
-A Java Spring Boot implementation of the Model Context Protocol (MCP) Memory Server, designed to be a drop-in replacement for the Anthropic reference implementation.
-
-This project follows **Domain-Driven Design (DDD)** and **Hexagonal Architecture** (Ports and Adapters).
+Graph based implementation of the Model Context Protocol (MCP) Memory Server.
 
 ## Features
 
@@ -17,14 +15,13 @@ This project follows **Domain-Driven Design (DDD)** and **Hexagonal Architecture
 
 ## Architecture
 
-- **Domain Layer (`com.example.memory.domain`)**: Contains the core business logic and entities (`Entity`, `Relation`). It defines the repository interface (`KnowledgeGraphRepository`).
-- **Application Layer (`com.example.memory.application`)**: Orchestrates the domain logic using services (`KnowledgeGraphService`).
-- **Infrastructure Layer (`com.example.memory.infrastructure`)**:
+- **Domain Layer**: Contains the core business logic and entities (`Entity`, `Relation`). It defines the repository interface (`KnowledgeGraphRepository`).
+- **Application Layer**: Orchestrates the domain logic using services (`KnowledgeGraphService`).
+- **Infrastructure Layer**:
   - **Persistence**: 
     - `InMemoryKnowledgeGraphRepository`: In-memory implementation (default).
     - `Neo4jKnowledgeGraphRepositoryAdapter`: Neo4j implementation (activates with `neo4j` profile).
   - **MCP**: Acts as the primary adapter, exposing tools via the `McpToolAdapter`.
-  - **Config**: Configuration files.
 
 ## Prerequisites
 
