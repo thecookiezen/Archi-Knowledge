@@ -2,6 +2,8 @@
 
 Graph based implementation of the Model Context Protocol (MCP) Memory Server.
 
+> **⚠️ Disclaimer:** This server currently implements **no authentication** mechanisms. Additionally, it relies on an **embedded graph database** (or in-memory storage) which is designed and optimized for **local development and testing environments only**. It is **not recommended for production use** in its current state.
+
 ## Features
 
 - **Knowledge Graph**: Stores entities and relations.
