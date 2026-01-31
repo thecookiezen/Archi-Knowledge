@@ -28,6 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @Transactional
 class Neo4jKnowledgeGraphRepositoryAdapterTest {
 
+    @org.springframework.boot.SpringBootConfiguration
+    @org.springframework.boot.autoconfigure.EnableAutoConfiguration
+    @org.springframework.context.annotation.ComponentScan(basePackages = "com.example.memory.infrastructure.persistence.neo4j")
+    static class TestConfig {
+    }
+
     private static Neo4j embeddedDatabaseServer;
 
     static class Neo4jInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
