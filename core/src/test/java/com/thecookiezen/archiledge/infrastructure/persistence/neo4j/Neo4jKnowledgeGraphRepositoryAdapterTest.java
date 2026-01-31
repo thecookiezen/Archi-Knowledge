@@ -65,18 +65,18 @@ class Neo4jKnowledgeGraphRepositoryAdapterTest {
 
     @Test
     void saveAndFindRelation() {
-        Entity e1 = new Entity("N1", "T");
-        Entity e2 = new Entity("N2", "T");
-        repository.saveEntity(e1);
-        repository.saveEntity(e2);
+        Entity sourceEntity = new Entity("SourceEntity", "TestType");
+        Entity targetEntity = new Entity("TargetEntity", "TestType");
+        repository.saveEntity(sourceEntity);
+        repository.saveEntity(targetEntity);
 
-        Relation relation = new Relation("N1", "N2", "TEST_REL");
+        Relation relation = new Relation("SourceEntity", "TargetEntity", "TEST_RELATION");
         repository.saveRelation(relation);
 
         List<Relation> relations = repository.findAllRelations();
         boolean found = relations.stream()
-                .anyMatch(r -> r.from().equals(new EntityId("N1")) && r.to().equals(new EntityId("N2"))
-                        && r.relationType().equals(new RelationType("TEST_REL")));
+                .anyMatch(r -> r.from().equals(new EntityId("SourceEntity")) && r.to().equals(new EntityId("TargetEntity"))
+                        && r.relationType().equals(new RelationType("TEST_RELATION")));
         assert (found);
     }
 }
