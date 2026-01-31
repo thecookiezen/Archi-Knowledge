@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class KnowledgeGraphServiceImpl implements KnowledgeGraphService {
+class KnowledgeGraphServiceImpl implements KnowledgeGraphService {
 
     private final KnowledgeGraphRepository repository;
 
-    public KnowledgeGraphServiceImpl(KnowledgeGraphRepository repository) {
+    KnowledgeGraphServiceImpl(KnowledgeGraphRepository repository) {
         this.repository = repository;
     }
 

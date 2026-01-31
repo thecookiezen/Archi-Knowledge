@@ -15,7 +15,7 @@ import java.nio.file.Path;
 
 @Configuration
 @Profile("neo4j")
-public class EmbeddedNeo4jConfig {
+class EmbeddedNeo4jConfig {
 
     @Value("${memory.neo4j.data-dir:}")
     private String dataDir;

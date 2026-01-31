@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @Profile("default")
-public class InMemoryKnowledgeGraphRepository implements KnowledgeGraphRepository {
+class InMemoryKnowledgeGraphRepository implements KnowledgeGraphRepository {
     private final Map<EntityId, Entity> entities = new ConcurrentHashMap<>();
     private final List<Relation> relations = new ArrayList<>();
 

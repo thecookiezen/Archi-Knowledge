@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 
 @Repository
 @Profile("neo4j")
-public class Neo4jKnowledgeGraphRepositoryAdapter implements KnowledgeGraphRepository {
+class Neo4jKnowledgeGraphRepositoryAdapter implements KnowledgeGraphRepository {
 
     private final SpringDataNeo4jRepository neo4jRepository;
 
-    public Neo4jKnowledgeGraphRepositoryAdapter(SpringDataNeo4jRepository neo4jRepository) {
+    Neo4jKnowledgeGraphRepositoryAdapter(SpringDataNeo4jRepository neo4jRepository) {
         this.neo4jRepository = neo4jRepository;
     }
 
