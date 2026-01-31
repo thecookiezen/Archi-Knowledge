@@ -2,7 +2,6 @@ package com.thecookiezen.archiledge.infrastructure.config;
 
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
-import org.neo4j.cypherdsl.core.renderer.Dialect;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
