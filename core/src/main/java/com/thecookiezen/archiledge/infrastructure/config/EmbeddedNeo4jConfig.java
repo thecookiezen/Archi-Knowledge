@@ -39,9 +39,4 @@ class EmbeddedNeo4jConfig {
     public Driver neo4jDriver(Neo4j neo4j) {
         return GraphDatabase.driver(neo4j.boltURI(), AuthTokens.none());
     }
-
-    @Bean
-    org.neo4j.cypherdsl.core.renderer.Configuration cypherDslConfiguration() {
-        return org.neo4j.cypherdsl.core.renderer.Configuration.newConfig().withDialect(Dialect.NEO4J_5).build();
-    }
 }

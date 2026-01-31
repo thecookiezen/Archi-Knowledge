@@ -7,16 +7,14 @@ import com.thecookiezen.archiledge.domain.model.RelationType;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.neo4j.harness.Neo4j;
-import org.neo4j.harness.Neo4jBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.Neo4jContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
@@ -24,8 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 @ActiveProfiles("neo4j")
-@ContextConfiguration(initializers = Neo4jKnowledgeGraphRepositoryAdapterTest.Neo4jInitializer.class)
-@Transactional
+@Testcontainers
 class Neo4jKnowledgeGraphRepositoryAdapterTest {
 
     @org.springframework.boot.SpringBootConfiguration
@@ -34,26 +31,21 @@ class Neo4jKnowledgeGraphRepositoryAdapterTest {
     static class TestConfig {
     }
 
-    private static Neo4j embeddedDatabaseServer;
+    @Container
+    static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:5")
+            .withoutAuthentication();
 
-    static class Neo4jInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-        @Override
-        public void initialize(ConfigurableApplicationContext applicationContext) {
-            embeddedDatabaseServer = Neo4jBuilders.newInProcessBuilder()
-                    .withDisabledServer()
-                    .build();
-
-            TestPropertyValues.of(
-                    "spring.neo4j.uri=" + embeddedDatabaseServer.boltURI().toString(),
-                    "spring.neo4j.authentication.username=neo4j",
-                    "spring.neo4j.authentication.password=password").applyTo(applicationContext.getEnvironment());
-        }
+    @DynamicPropertySource
+    static void neo4jProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.neo4j.uri", neo4jContainer::getBoltUrl);
+        registry.add("spring.neo4j.authentication.username", () -> "neo4j");
+        registry.add("spring.neo4j.authentication.password", neo4jContainer::getAdminPassword);
     }
 
     @AfterAll
-    static void stopNeo4j() {
-        if (embeddedDatabaseServer != null) {
-            embeddedDatabaseServer.close();
+    static void tearDown() {
+        if (neo4jContainer != null) {
+            neo4jContainer.close();
         }
     }
 
