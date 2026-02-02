@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.thecookiezen</groupId>
-    <artifactId>archiledge-parent</artifactId>
+    <artifactId>archiledger-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>archiledge-parent</name>
+    <name>archiledger-parent</name>
     <description>Parent POM for Memory MCP Server</description>
     <packaging>pom</packaging>
 
@@ -48,7 +48,7 @@
             </dependency>
             <dependency>
                 <groupId>com.thecookiezen</groupId>
-                <artifactId>archiledge-core</artifactId>
+                <artifactId>archiledger-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

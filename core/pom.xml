@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.thecookiezen</groupId>
-        <artifactId>archiledge-parent</artifactId>
+        <artifactId>archiledger-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>archiledge-core</artifactId>
-    <name>archiledge-core</name>
+    <artifactId>archiledger-core</artifactId>
+    <name>archiledger-core</name>
     <description>Core domain and persistence logic</description>
 
     <properties>

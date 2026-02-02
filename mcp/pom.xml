@@ -4,17 +4,17 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.thecookiezen</groupId>
-        <artifactId>archiledge-parent</artifactId>
+        <artifactId>archiledger-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>archiledge-server</artifactId>
-    <name>archiledge-server</name>
+    <artifactId>archiledger-server</artifactId>
+    <name>archiledger-server</name>
     <description>MCP Server Implementation</description>
 
     <dependencies>
         <dependency>
             <groupId>com.thecookiezen</groupId>
-            <artifactId>archiledge-core</artifactId>
+            <artifactId>archiledger-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
