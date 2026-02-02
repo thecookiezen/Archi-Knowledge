@@ -1,4 +1,4 @@
-package com.thecookiezen.archiledge;
+package com.thecookiezen.archiledger;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

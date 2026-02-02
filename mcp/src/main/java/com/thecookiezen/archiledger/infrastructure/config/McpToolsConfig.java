@@ -1,6 +1,6 @@
-package com.thecookiezen.archiledge.infrastructure.config;
+package com.thecookiezen.archiledger.infrastructure.config;
 
-import com.thecookiezen.archiledge.infrastructure.mcp.McpToolAdapter;
+import com.thecookiezen.archiledger.infrastructure.mcp.McpToolAdapter;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.context.annotation.Bean;

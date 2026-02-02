@@ -1,4 +1,4 @@
-package com.thecookiezen.archiledge.infrastructure.mcp.dto;
+package com.thecookiezen.archiledger.infrastructure.mcp.dto;
 
 import com.thecookiezen.archiledge.domain.model.Relation;
 
