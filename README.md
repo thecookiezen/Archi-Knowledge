@@ -51,7 +51,6 @@ The graph model is particularly powerful because knowledge isn't flat — concep
 
 - Java 21 or higher
 - Maven
-- Neo4j Database (if using `neo4j` profile without embedded setup)
 
 ## Building
 
@@ -92,16 +91,6 @@ java -Dspring.profiles.active=neo4j \
 > 2. Check the server logs for the Bolt URI, e.g.: `Driver instance ... created for server uri 'bolt://localhost:35157'`
 > 3. Open Neo4j Browser (default: http://localhost:8080) and connect using the Bolt URI from the logs.
 > 4. Run Cypher queries like `MATCH (n) RETURN n` to explore your knowledge graph.
-
-### With Neo4j (External)
-Configure Neo4j connection details in `application.properties` or via environment variables, then run with the `neo4j` profile.
-
-```bash
-export SPRING_NEO4J_URI=bolt://localhost:7687
-export SPRING_NEO4J_AUTHENTICATION_USERNAME=neo4j
-export SPRING_NEO4J_AUTHENTICATION_PASSWORD=secret
-java -Dspring.profiles.active=neo4j -jar mcp/target/archiledger-server-0.0.1-SNAPSHOT.jar
-```
 
 ### Running with Docker
 
