@@ -15,7 +15,7 @@ RUN mkdir -p /data/neo4j && chown -R spring:spring /data
 
 USER spring:spring
 
-COPY mcp/target/mcp.jar app.jar
+COPY mcp/target/*.jar app.jar
 
 # HTTP server port and Neo4j Bolt port
 EXPOSE 8080 7687
