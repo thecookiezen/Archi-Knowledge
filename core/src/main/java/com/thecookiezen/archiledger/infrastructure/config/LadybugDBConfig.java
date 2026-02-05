@@ -13,8 +13,8 @@ public class LadybugDBConfig {
         return new Database();
     }
 
-    @Bean
-    public Connection connection(Database database) {
-        return database.connect();
-    }
+    // @Bean
+    // public Connection connection(Database database) {
+    // // return database.connect();
+    // }
 }
