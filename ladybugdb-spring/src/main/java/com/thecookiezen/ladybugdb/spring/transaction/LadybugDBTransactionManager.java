@@ -69,33 +69,32 @@ public class LadybugDBTransactionManager extends AbstractPlatformTransactionMana
                 txObject.getConnectionHolder().setTransactionActive(true);
             }
 
-            logger.debug("Started LadybugDB transaction");
-
+            // NOTE: LadybugDB auto-commits each command. Explicit transaction management
+            // (BEGIN TRANSACTION/COMMIT/ROLLBACK) is not used because LadybugDB only allows
+            // one write transaction at a time, which can cause deadlocks in multi-threaded
+            // apps.
+            logger.debug("Started LadybugDB transaction (auto-commit mode)");
         } catch (Exception e) {
             throw new LadybugDBTransactionException("Could not begin transaction", e);
         }
     }
 
     @Override
-    @SuppressWarnings("unused") // txObject kept for future native transaction support
+    @SuppressWarnings("unused") // txObject kept for API consistency
     protected void doCommit(DefaultTransactionStatus status) throws TransactionException {
         LadybugDBTransactionObject txObject = (LadybugDBTransactionObject) status.getTransaction();
-        logger.debug("Committing LadybugDB transaction");
-
-        // LadybugDB uses auto-transactions: each command is automatically wrapped
-        // in a serializable transaction. Commit is a no-op since each query commits
-        // automatically. Checkpoint happens automatically when WAL exceeds threshold.
+        logger.debug("Committing LadybugDB transaction (auto-commit mode - no explicit commit needed)");
+        // LadybugDB auto-commits each command, so no explicit COMMIT is needed.
     }
 
     @Override
-    @SuppressWarnings("unused") // txObject kept for future native transaction support
+    @SuppressWarnings("unused") // txObject kept for API consistency
     protected void doRollback(DefaultTransactionStatus status) throws TransactionException {
         LadybugDBTransactionObject txObject = (LadybugDBTransactionObject) status.getTransaction();
         logger.debug("Rolling back LadybugDB transaction");
-
-        // LadybugDB auto-commits each command in a serializable transaction.
-        // Rollback is not supported - once a command executes, it is committed.
-        // This transaction manager provides connection binding only.
+        // LadybugDB auto-commits each command - rollback is not supported.
+        // Once a command executes, it is committed. This transaction manager provides
+        // connection binding only.
         logger.warn("LadybugDB auto-commits each command. Rollback not supported.");
     }
 
