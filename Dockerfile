@@ -4,6 +4,10 @@ WORKDIR /app
 
 # Default data directory for Neo4j persistence
 ENV NEO4J_DATA_DIR=/data/neo4j
+# Default JVM memory settings
+ENV INITIAL_MEMORY=256m
+ENV MAX_MEMORY=512m
+ENV MAX_RAM_PERCENTAGE=75.0
 
 # Default Bolt port for Neo4j connections (0 = dynamic port)
 ENV NEO4J_BOLT_PORT=7687
@@ -23,4 +27,13 @@ EXPOSE 8080 7687
 # Volume mount point for Neo4j data
 VOLUME ["/data/neo4j"]
 
-ENTRYPOINT java -Dspring.profiles.active=neo4j -Dspring.neo4j.uri=embedded -Dmemory.neo4j.data-dir=${NEO4J_DATA_DIR} -Dmemory.neo4j.bolt-port=${NEO4J_BOLT_PORT} -jar app.jar
+ENTRYPOINT ["sh", "-c", "java \
+    -Xms${INITIAL_MEMORY} \
+    -Xmx${MAX_MEMORY} \
+    -XX:MaxRAMPercentage=${MAX_RAM_PERCENTAGE} \
+    -Dspring.profiles.active=neo4j \
+    -Dspring.neo4j.uri=embedded \
+    -Dmemory.neo4j.data-dir=${NEO4J_DATA_DIR} \
+    -Dmemory.neo4j.bolt-port=${NEO4J_BOLT_PORT} \
+    -jar \
+    app.jar"]

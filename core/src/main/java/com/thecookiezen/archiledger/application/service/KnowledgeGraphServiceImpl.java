@@ -6,6 +6,10 @@ import com.thecookiezen.archiledger.domain.model.EntityType;
 import com.thecookiezen.archiledger.domain.model.Relation;
 import com.thecookiezen.archiledger.domain.model.RelationType;
 import com.thecookiezen.archiledger.domain.repository.KnowledgeGraphRepository;
+
+import jakarta.annotation.PostConstruct;
+
+import com.thecookiezen.archiledger.domain.repository.EmbeddingsService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,9 +22,16 @@ import java.util.Set;
 class KnowledgeGraphServiceImpl implements KnowledgeGraphService {
 
     private final KnowledgeGraphRepository repository;
+    private final EmbeddingsService embeddingsService;
 
-    KnowledgeGraphServiceImpl(KnowledgeGraphRepository repository) {
+    @PostConstruct
+    public void init() {
+        repository.findAllEntities().forEach(e -> embeddingsService.generateEmbeddings(e));
+    }
+
+    KnowledgeGraphServiceImpl(KnowledgeGraphRepository repository, EmbeddingsService embeddingsService) {
         this.repository = repository;
+        this.embeddingsService = embeddingsService;
     }
 
     @Override
@@ -28,6 +39,7 @@ class KnowledgeGraphServiceImpl implements KnowledgeGraphService {
         List<Entity> created = new ArrayList<>();
         for (Entity e : newEntities) {
             created.add(repository.saveEntity(e));
+            embeddingsService.generateEmbeddings(e);
         }
         return created;
     }
@@ -49,6 +61,7 @@ class KnowledgeGraphServiceImpl implements KnowledgeGraphService {
     public void deleteEntities(List<EntityId> ids) {
         for (EntityId id : ids) {
             repository.deleteEntity(id);
+            embeddingsService.deleteEmbeddings(List.of(id.toString()));
         }
     }
 
@@ -92,5 +105,10 @@ class KnowledgeGraphServiceImpl implements KnowledgeGraphService {
     @Override
     public Set<RelationType> getRelationTypes() {
         return repository.findAllRelationTypes();
+    }
+
+    @Override
+    public List<String> similaritySearch(String query) {
+        return embeddingsService.findClosestMatch(query);
     }
 }

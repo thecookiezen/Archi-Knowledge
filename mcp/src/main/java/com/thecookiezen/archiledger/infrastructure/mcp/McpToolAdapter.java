@@ -42,7 +42,7 @@ public class McpToolAdapter {
                         @ToolParam(description = "List of relations to create") List<RelationDto> newRelations) {
                 List<Relation> domainRelations = newRelations.stream()
                                 .map(RelationDto::toDomain)
-                                .collect(Collectors.toList());
+                                .toList();
                 return knowledgeGraphService.createRelations(domainRelations).stream()
                                 .map(RelationDto::fromDomain)
                                 .collect(Collectors.toList());
@@ -120,5 +120,11 @@ public class McpToolAdapter {
                 return knowledgeGraphService.getRelationTypes().stream()
                                 .map(RelationType::value)
                                 .collect(Collectors.toList());
+        }
+
+        @Tool(name = "similarity_search", description = "Find entities most similar to a given query based on embeddings.")
+        public List<String> similaritySearch(
+                        @ToolParam(description = "Query to find similar entities for") String query) {
+                return knowledgeGraphService.similaritySearch(query);
         }
 }
