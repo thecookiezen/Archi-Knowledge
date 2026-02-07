@@ -213,6 +213,8 @@ class SimpleNodeRepositoryTest {
         Follows follows = new Follows(alice, bob);
         Follows created = repository.createRelation(alice, bob, follows);
 
+        System.out.println(created);
+
         assertNotNull(created);
         assertEquals("Alice", created.from.name);
         assertEquals("Bob", created.to.name);
@@ -290,11 +292,17 @@ class SimpleNodeRepositoryTest {
             this.name = name;
             this.age = age;
         }
+
+        @Override
+        public String toString() {
+            return "Person{" + "name='" + name + '\'' + ", age=" + age + '}';
+        }
     }
 
     static RowMapper<Person> personReader = (row) -> {
-        String name = ValueMappers.asString(row.get("name"));
-        int age = ValueMappers.asInteger(row.get("age"));
+        var p = row.getNode("n");
+        String name = ValueMappers.asString(p.get("name"));
+        int age = ValueMappers.asInteger(p.get("age"));
         return new Person(name, age);
     };
 
@@ -315,14 +323,22 @@ class SimpleNodeRepositoryTest {
             this.from = from;
             this.to = to;
         }
+
+        @Override
+        public String toString() {
+            return "Follows{" + "from=" + from + ", to=" + to + '}';
+        }
     }
 
     static EntityWriter<Follows> followsWriter = (entity) -> Map.of();
 
     static RowMapper<Follows> followsReader = (row) -> {
-        // Source and target are returned as IDs (String name) in the query
-        String sourceName = ValueMappers.asString(row.get("from"));
-        String targetName = ValueMappers.asString(row.get("to"));
-        return new Follows(new Person(sourceName, 1), new Person(targetName, 2));
+        var s = row.getNode("s");
+        var t = row.getNode("t");
+        String sourceName = ValueMappers.asString(s.get("name"));
+        int sourceAge = ValueMappers.asInteger(s.get("age"));
+        String targetName = ValueMappers.asString(t.get("name"));
+        int targetAge = ValueMappers.asInteger(t.get("age"));
+        return new Follows(new Person(sourceName, sourceAge), new Person(targetName, targetAge));
     };
 }

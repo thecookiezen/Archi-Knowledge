@@ -5,9 +5,11 @@ import com.thecookiezen.ladybugdb.spring.mapper.ValueMappers;
 import com.thecookiezen.ladybugdb.spring.repository.NodeRepository;
 
 import org.neo4j.cypherdsl.core.Cypher;
+import org.neo4j.cypherdsl.core.ExposesMerge;
 import org.neo4j.cypherdsl.core.Expression;
 import org.neo4j.cypherdsl.core.Node;
 import org.neo4j.cypherdsl.core.Statement;
+import org.neo4j.cypherdsl.core.StatementBuilder.OngoingMerge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +128,7 @@ public class SimpleNodeRepository<T, R, ID> implements NodeRepository<T, ID, R, 
                                 .returning(Cypher.count(n).as("count"))
                                 .build();
 
-                return template.queryForObject(statement, (row) -> (Long) ValueMappers.asLong(row.get("count")))
+                return template.queryForObject(statement, (row) -> (Long) ValueMappers.asLong(row.getValue("count")))
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Failed to count nodes of type: " + metadata.getNodeLabel()));
         }
@@ -194,19 +196,14 @@ public class SimpleNodeRepository<T, R, ID> implements NodeRepository<T, ID, R, 
                                 .map(e -> rel.property(e.getKey()).to(Cypher.literalOf(e.getValue())))
                                 .toList();
 
-                var returnExpressions = metadata.getPropertyNames().stream()
-                                .map(s::property)
-                                .toArray(Expression[]::new);
+                var matchMerge = Cypher.match(s, t).merge(rel);
 
-                Statement statement = Cypher.match(s, t)
-                                .merge(rel)
-                                .set(setOperations)
-                                // .returning(
-                                // Cypher.name("r"),
-                                // s.withProperties(returnExpressions),
-                                // t.withProperties(returnExpressions))
-                                .returning(rel)
-                                .build();
+                Statement statement;
+                if (!setOperations.isEmpty()) {
+                        statement = matchMerge.set(setOperations).returning(s, t, rel).build();
+                } else {
+                        statement = matchMerge.returning(s, t, rel).build();
+                }
 
                 return template.queryForObject(statement, relationshipDescriptor.reader())
                                 .orElseThrow(() -> new RuntimeException(
