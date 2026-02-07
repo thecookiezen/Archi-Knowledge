@@ -30,8 +30,8 @@ public class LadybugDBEntityInformation<T, ID> implements EntityInformation<T, I
     @Override
     @SuppressWarnings("unchecked")
     public Class<ID> getIdType() {
-        if (metadata.getIdField() != null) {
-            return (Class<ID>) metadata.getIdField().getType();
+        if (metadata.getIdType() != null) {
+            return (Class<ID>) metadata.getIdType();
         }
         return (Class<ID>) Object.class;
     }

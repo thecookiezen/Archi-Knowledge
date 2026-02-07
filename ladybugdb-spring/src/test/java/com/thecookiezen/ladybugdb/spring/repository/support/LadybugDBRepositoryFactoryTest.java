@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.core.RepositoryInformation;
 
 import java.util.Map;
@@ -58,6 +59,8 @@ class LadybugDBRepositoryFactoryTest {
 
     @RelationshipEntity(nodeType = Person.class, sourceField = "source", targetField = "target")
     static class TestRelationship {
+        @Id
+        String id;
         Person source;
         Person target;
     }

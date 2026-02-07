@@ -3,6 +3,8 @@ package com.thecookiezen.ladybugdb.spring.repository.support;
 import com.thecookiezen.ladybugdb.spring.annotation.NodeEntity;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
@@ -11,16 +13,32 @@ public class NodeMetadata<T> {
 
     private final Class<T> entityType;
     private final String nodeLabel;
-    private final Field idField;
+    private final MethodHandle idGetter;
+    private final MethodHandle idSetter;
     private final String idPropertyName;
+    private final Class<?> idType;
     private final List<String> propertyNames;
 
     public NodeMetadata(Class<T> entityType) {
         this.entityType = entityType;
         this.nodeLabel = determineNodeLabel(entityType);
-        this.idField = findIdField(entityType);
+        Field idField = findIdField(entityType);
         this.idPropertyName = idField != null ? idField.getName() : "id";
+        this.idType = idField != null ? idField.getType() : null;
         this.propertyNames = extractPropertyNames(entityType);
+
+        try {
+            if (idField != null) {
+                MethodHandles.Lookup lookup = MethodHandles.lookup();
+                this.idGetter = lookup.unreflectGetter(idField);
+                this.idSetter = lookup.unreflectSetter(idField);
+            } else {
+                this.idGetter = null;
+                this.idSetter = null;
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Failed to create method handles for ID field", e);
+        }
     }
 
     private List<String> extractPropertyNames(Class<T> entityType) {
@@ -72,33 +90,33 @@ public class NodeMetadata<T> {
         return nodeLabel;
     }
 
-    public Field getIdField() {
-        return idField;
-    }
-
     public String getIdPropertyName() {
         return idPropertyName;
     }
 
+    public Class<?> getIdType() {
+        return idType;
+    }
+
     @SuppressWarnings("unchecked")
     public <ID> ID getId(T entity) {
-        if (idField == null) {
+        if (idGetter == null) {
             return null;
         }
         try {
-            return (ID) idField.get(entity);
-        } catch (IllegalAccessException e) {
+            return (ID) idGetter.invoke(entity);
+        } catch (Throwable e) {
             throw new RuntimeException("Failed to access ID field", e);
         }
     }
 
     public void setId(T entity, Object id) {
-        if (idField == null) {
+        if (idSetter == null) {
             throw new IllegalStateException("No ID field found for entity type: " + entityType.getName());
         }
         try {
-            idField.set(entity, id);
-        } catch (IllegalAccessException e) {
+            idSetter.invoke(entity, id);
+        } catch (Throwable e) {
             throw new RuntimeException("Failed to set ID field", e);
         }
     }

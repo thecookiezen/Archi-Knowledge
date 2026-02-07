@@ -35,10 +35,10 @@ template.execute("CREATE (p:Person {name: 'Alice', age: 30})");
 
 // Query with mapping
 List<Person> people = template.query(
-    "MATCH (p:Person) RETURN p.name, p.age",
+    "MATCH (p:Person) RETURN p.name AS name, p.age AS age",
     (row) -> new Person(
-        ValueMappers.asString(row.get("name")),
-        ValueMappers.asInteger(row.get("age"))
+        ValueMappers.asString(row.getValue("name")),
+        ValueMappers.asInteger(row.getValue("age"))
     )
 );
 ```
@@ -50,8 +50,8 @@ The repository requires `RowMapper` and `EntityWriter` to handle entity conversi
 ```java
 // Define mappers
 RowMapper<Person> reader = (row) -> new Person(
-    ValueMappers.asString(row.get("name")), 
-    ValueMappers.asInteger(row.get("age"))
+    ValueMappers.asString(row.getValue("name")), 
+    ValueMappers.asInteger(row.getValue("age"))
 );
 
 EntityWriter<Person> writer = (entity) -> Map.of(
@@ -74,6 +74,46 @@ SimpleNodeRepository<Person, Void, String> repository = new SimpleNodeRepository
 Person saved = repository.save(new Person("Bob", 25));
 Optional<Person> found = repository.findById("Bob");
 repository.deleteById("Bob");
+```
+
+### Parse Relationships
+
+You can also map relationships, including their properties and connected nodes.
+
+```java
+// Define relationship entity
+public class Follows {
+    String id;
+    Person from;
+    Person to;
+    int since;
+    // constructors...
+}
+
+// Define mapper for relationship
+RowMapper<Follows> followsMapper = (row) -> {
+    // Get relationship data (properties, type, ids)
+    RelationshipData rel = row.getRelationship("rel");
+    String id = rel.id().toString(); // Internal ID
+    int since = ValueMappers.asInteger(rel.properties().get("since"));
+
+    // Get connected nodes (if returned by query)
+    // Query: MATCH (s)-[rel:FOLLOWS]->(t) RETURN s, rel, t
+    Map<String, Value> sourceProps = row.getNode("s");
+    Map<String, Value> targetProps = row.getNode("t");
+
+    Person from = new Person(
+        ValueMappers.asString(sourceProps.get("name")), 
+        ValueMappers.asInteger(sourceProps.get("age"))
+    );
+    
+    Person to = new Person(
+        ValueMappers.asString(targetProps.get("name")), 
+        ValueMappers.asInteger(targetProps.get("age"))
+    );
+
+    return new Follows(id, from, to, since);
+};
 ```
 
 ## Components

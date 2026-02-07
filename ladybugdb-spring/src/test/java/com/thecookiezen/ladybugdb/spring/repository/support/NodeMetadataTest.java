@@ -16,15 +16,16 @@ class NodeMetadataTest {
         void shouldFindSpringDataIdAnnotation() {
             NodeMetadata<EntityWithSpringId> metadata = new NodeMetadata<>(EntityWithSpringId.class);
 
-            assertNotNull(metadata.getIdField());
-            assertEquals("id", metadata.getIdField().getName());
+            assertNotNull(metadata.getIdType());
+            assertEquals(String.class, metadata.getIdType());
+            assertEquals("id", metadata.getIdPropertyName());
         }
 
         @Test
         void shouldReturnNullWhenNoIdField() {
             NodeMetadata<EntityWithoutId> metadata = new NodeMetadata<>(EntityWithoutId.class);
 
-            assertNull(metadata.getIdField());
+            assertNull(metadata.getIdType());
         }
     }
 

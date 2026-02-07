@@ -108,18 +108,25 @@ public class LadybugDBTemplate {
             List<T> results = new ArrayList<>();
             int rowNum = 0;
 
+            // Pre-compute column mapping once
+            int numColumns = (int) result.getNumColumns();
+            Map<String, Integer> columnToIndex = new HashMap<>(numColumns);
+            for (int i = 0; i < numColumns; i++) {
+                columnToIndex.put(result.getColumnName(i), i);
+            }
+
             while (result.hasNext()) {
                 var row = result.getNext();
 
                 logger.debug("Query result row {}: {}", rowNum, row);
 
                 try {
-                    Map<String, Value> columns = new HashMap<>();
-                    for (int i = 0; i < result.getNumColumns(); i++) {
-                        columns.put(result.getColumnName(i), row.getValue(i));
+                    Value[] values = new Value[numColumns];
+                    for (int i = 0; i < numColumns; i++) {
+                        values[i] = row.getValue(i);
                     }
 
-                    QueryRow queryRow = new DefaultQueryRow(columns);
+                    QueryRow queryRow = new DefaultQueryRow(values, columnToIndex);
                     T mapped = rowMapper.mapRow(queryRow);
                     results.add(mapped);
                 } catch (Exception e) {

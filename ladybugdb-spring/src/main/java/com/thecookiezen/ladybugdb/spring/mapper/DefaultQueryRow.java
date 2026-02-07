@@ -18,42 +18,46 @@ import java.util.Set;
  */
 public final class DefaultQueryRow implements QueryRow {
 
-    private final Map<String, Value> columns;
+    private final Value[] values;
+    private final Map<String, Integer> columnToIndex;
 
     /**
-     * Creates a QueryRow from the raw column map.
+     * Creates a QueryRow from the raw values and column index map.
      *
-     * @param columns the map of column names to raw Values
+     * @param values        the array of values for this row
+     * @param columnToIndex the shared map of column names to indices
      */
-    public DefaultQueryRow(Map<String, Value> columns) {
-        this.columns = columns;
+    public DefaultQueryRow(Value[] values, Map<String, Integer> columnToIndex) {
+        this.values = values;
+        this.columnToIndex = columnToIndex;
     }
 
     @Override
     public Value getValue(String column) {
-        return columns.get(column);
+        Integer index = columnToIndex.get(column);
+        return index != null && index < values.length ? values[index] : null;
     }
 
     @Override
     public boolean containsKey(String column) {
-        return columns.containsKey(column);
+        return columnToIndex.containsKey(column);
     }
 
     @Override
     public boolean isNode(String column) {
-        Value value = columns.get(column);
+        Value value = getValue(column);
         return value != null && value.getDataType().getID() == DataTypeID.NODE;
     }
 
     @Override
     public boolean isRelationship(String column) {
-        Value value = columns.get(column);
+        Value value = getValue(column);
         return value != null && value.getDataType().getID() == DataTypeID.REL;
     }
 
     @Override
     public Map<String, Value> getNode(String column) {
-        Value value = columns.get(column);
+        Value value = getValue(column);
         if (value == null) {
             throw new IllegalArgumentException("Column '" + column + "' does not exist");
         }
@@ -68,7 +72,7 @@ public final class DefaultQueryRow implements QueryRow {
 
     @Override
     public RelationshipData getRelationship(String column) {
-        Value value = columns.get(column);
+        Value value = getValue(column);
         if (value == null) {
             throw new IllegalArgumentException("Column '" + column + "' does not exist");
         }
@@ -95,6 +99,6 @@ public final class DefaultQueryRow implements QueryRow {
 
     @Override
     public Set<String> keySet() {
-        return columns.keySet();
+        return columnToIndex.keySet();
     }
 }
