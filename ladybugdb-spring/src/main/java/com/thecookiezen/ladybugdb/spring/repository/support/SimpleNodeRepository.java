@@ -188,12 +188,9 @@ public class SimpleNodeRepository<T, R, ID> implements NodeRepository<T, ID, R, 
 
                 var rel = s.relationshipTo(t, relationshipMetadata.getRelationshipTypeName()).named("r");
 
-                var decomposed = relationshipDescriptor.writer().decompose(relationship);
-
-                decomposed.remove(relationshipMetadata.getSourceField().getName());
-                decomposed.remove(relationshipMetadata.getTargetField().getName());
-
-                var setOperations = decomposed.entrySet().stream()
+                var setOperations = relationshipDescriptor.writer().decompose(relationship).entrySet().stream()
+                                .filter(e -> !e.getKey().equals(relationshipMetadata.getSourceFieldName())
+                                                && !e.getKey().equals(relationshipMetadata.getTargetFieldName()))
                                 .map(e -> rel.property(e.getKey()).to(Cypher.literalOf(e.getValue())))
                                 .toList();
 

@@ -2,10 +2,8 @@ package com.thecookiezen.ladybugdb.spring.repository.support;
 
 import com.ladybugdb.Connection;
 import com.ladybugdb.Database;
-import com.thecookiezen.ladybugdb.spring.annotation.Destination;
 import com.thecookiezen.ladybugdb.spring.annotation.NodeEntity;
 import com.thecookiezen.ladybugdb.spring.annotation.RelationshipEntity;
-import com.thecookiezen.ladybugdb.spring.annotation.Source;
 import com.thecookiezen.ladybugdb.spring.connection.SimpleConnectionFactory;
 import com.thecookiezen.ladybugdb.spring.core.LadybugDBTemplate;
 import com.thecookiezen.ladybugdb.spring.mapper.EntityWriter;
@@ -304,12 +302,10 @@ class SimpleNodeRepositoryTest {
         return Map.of("age", entity.age);
     };
 
-    @RelationshipEntity(type = "FOLLOWS")
+    @RelationshipEntity(type = "FOLLOWS", nodeType = Person.class, sourceField = "from", targetField = "to")
     static class Follows {
-        @Source
         Person from;
 
-        @Destination
         Person to;
 
         Follows() {

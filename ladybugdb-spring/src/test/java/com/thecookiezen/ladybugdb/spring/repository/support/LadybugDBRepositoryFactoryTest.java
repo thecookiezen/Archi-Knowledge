@@ -1,5 +1,6 @@
 package com.thecookiezen.ladybugdb.spring.repository.support;
 
+import com.thecookiezen.ladybugdb.spring.annotation.RelationshipEntity;
 import com.thecookiezen.ladybugdb.spring.core.LadybugDBTemplate;
 import com.thecookiezen.ladybugdb.spring.mapper.EntityWriter;
 import com.thecookiezen.ladybugdb.spring.mapper.RowMapper;
@@ -52,29 +53,18 @@ class LadybugDBRepositoryFactoryTest {
         assertThat(relMetadata.getRelationshipType()).isEqualTo(TestRelationship.class);
     }
 
-    @Test
-    void getTargetRepository_shouldDefaultToObjectWhenRelationshipTypeUnresolved() {
-        when(metadata.getRepositoryInterface()).thenReturn((Class) GenericRepository.class);
-        when(metadata.getDomainType()).thenReturn((Class) Person.class);
-
-        Object repository = factory.getTargetRepository(metadata);
-
-        assertThat(repository).isInstanceOf(SimpleNodeRepository.class);
-        SimpleNodeRepository<?, ?, ?> simpleRepo = (SimpleNodeRepository<?, ?, ?>) repository;
-
-        RelationshipMetadata<?> relMetadata = simpleRepo.relationshipMetadata;
-        assertThat(relMetadata.getRelationshipType()).isEqualTo(Object.class);
-    }
-
     static class Person {
     }
 
+    @RelationshipEntity(nodeType = Person.class, sourceField = "source", targetField = "target")
     static class TestRelationship {
+        Person source;
+        Person target;
     }
 
     interface PersonRepository extends NodeRepository<Person, String, TestRelationship, Person> {
     }
 
-    interface GenericRepository extends NodeRepository<Person, String, Object, Person> {
+    interface GenericRepository extends NodeRepository<Person, String, TestRelationship, Person> {
     }
 }
