@@ -47,11 +47,16 @@ class LadybugRepositoryQueryTest {
         }
     }
 
-    @BeforeEach
-    void setup() {
+    private EntityRegistry createEntityRegistry() {
         EntityRegistry registry = new EntityRegistry();
         registry.registerDescriptor(Person.class, personReader, personWriter);
         registry.registerDescriptor(Follows.class, followsReader, followsWriter);
+        return registry;
+    }
+
+    @BeforeEach
+    void setup() {
+        EntityRegistry registry = createEntityRegistry();
 
         LadybugDBRepositoryFactory factory = new LadybugDBRepositoryFactory(template, registry);
         repository = factory.getRepository(TestRepository.class);
