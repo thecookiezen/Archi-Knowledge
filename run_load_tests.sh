@@ -30,7 +30,7 @@ run_scenario() {
     --loadtest.scenario.name="$SCENARIO_NAME" \
     --loadtest.entity-count=$ENTITIES \
     --loadtest.relations-per-entity=$RELATIONS \
-    --loadtest.batch-size=25 || echo "Scenario $SCENARIO_NAME FAILED"
+    --loadtest.batch-size=25 || { status=$?; echo "Scenario $SCENARIO_NAME FAILED with exit code $status"; }
     
     echo ""
 }
