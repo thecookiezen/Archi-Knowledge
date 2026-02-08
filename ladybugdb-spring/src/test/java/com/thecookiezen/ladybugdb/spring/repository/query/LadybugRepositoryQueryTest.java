@@ -186,7 +186,7 @@ class LadybugRepositoryQueryTest {
         }
     }
 
-    static RowMapper<Person> personReader = (row) -> {
+    static RowMapper<Person> personRowMapper = (row) -> {
         var p = row.getNode("n");
         String name = ValueMappers.asString(p.get("name"));
         int age = ValueMappers.asInteger(p.get("age"));
