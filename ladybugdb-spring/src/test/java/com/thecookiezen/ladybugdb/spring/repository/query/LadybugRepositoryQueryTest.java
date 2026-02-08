@@ -209,6 +209,9 @@ class LadybugRepositoryQueryTest {
         }
     }
 
-    static EntityWriter<Follows> followsWriter = (entity) -> Map.of();
+    static EntityWriter<Follows> followsWriter = (entity) -> Map.of(
+            "name", entity.name,
+            "since", entity.since
+    );
     static RowMapper<Follows> followsReader = (row) -> new Follows();
 }
