@@ -27,7 +27,10 @@ class LadybugKnowledgeGraphRepositoryAdapterTest {
 
     @org.springframework.boot.SpringBootConfiguration
     @org.springframework.boot.autoconfigure.EnableAutoConfiguration
-    @org.springframework.context.annotation.ComponentScan(basePackages = "com.thecookiezen.archiledger.infrastructure.persistence.ladybugdb")
+    @org.springframework.context.annotation.ComponentScan(basePackages = {
+            "com.thecookiezen.archiledger.infrastructure.persistence.ladybugdb",
+            "com.thecookiezen.archiledger.infrastructure.config"
+    })
     static class TestConfig {
     }
 
