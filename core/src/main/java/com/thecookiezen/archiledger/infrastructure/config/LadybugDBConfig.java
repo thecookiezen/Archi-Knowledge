@@ -55,17 +55,15 @@ public class LadybugDBConfig {
         } else {
             Path dataDirPath = Path.of(dataDir);
             boolean isNewDatabase = !Files.exists(dataDirPath.resolve("data"));
-
+            db = new Database(dataDir);
             if (isNewDatabase) {
+                initializeSchema(db);
                 logger.info("Creating new persistent LadybugDB database at: {}", dataDirPath.toAbsolutePath());
             } else {
                 logger.info("Loaded existing LadybugDB database from: {}", dataDirPath.toAbsolutePath());
             }
-
-            db = new Database(dataDir);
         }
 
-        initializeSchema(db);
         return db;
     }
 
