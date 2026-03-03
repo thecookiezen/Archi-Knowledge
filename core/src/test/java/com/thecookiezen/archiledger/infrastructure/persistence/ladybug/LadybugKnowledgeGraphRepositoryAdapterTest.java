@@ -1,4 +1,4 @@
-package com.thecookiezen.archiledger.infrastructure.persistence.neo4j;
+package com.thecookiezen.archiledger.infrastructure.persistence.ladybug;
 
 import com.thecookiezen.archiledger.domain.model.Entity;
 import com.thecookiezen.archiledger.domain.model.EntityId;
