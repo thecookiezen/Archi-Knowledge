@@ -8,6 +8,8 @@ import com.thecookiezen.ladybugdb.spring.config.EnableLadybugDBRepositories;
 import com.thecookiezen.ladybugdb.spring.connection.LadybugDBConnectionFactory;
 import com.thecookiezen.ladybugdb.spring.connection.PooledConnectionFactory;
 import com.thecookiezen.ladybugdb.spring.core.LadybugDBTemplate;
+import com.thecookiezen.ladybugdb.spring.mapper.EntityWriter;
+import com.thecookiezen.ladybugdb.spring.mapper.RowMapper;
 import com.thecookiezen.ladybugdb.spring.mapper.ValueMappers;
 import com.thecookiezen.ladybugdb.spring.repository.support.EntityRegistry;
 import com.thecookiezen.ladybugdb.spring.transaction.LadybugDBTransactionManager;
@@ -113,7 +115,7 @@ public class LadybugDBConfig {
         return registry;
     }
 
-    private com.thecookiezen.ladybugdb.spring.mapper.RowMapper<LadybugEntity> entityReader() {
+    private RowMapper<LadybugEntity> entityReader() {
         return row -> {
             var node = row.getNode("n");
             LadybugEntity entity = new LadybugEntity();
@@ -124,7 +126,7 @@ public class LadybugDBConfig {
         };
     }
 
-    private com.thecookiezen.ladybugdb.spring.mapper.EntityWriter<LadybugEntity> entityWriter() {
+    private EntityWriter<LadybugEntity> entityWriter() {
         return entity -> {
             Map<String, Object> props = new HashMap<>();
             props.put("type", entity.getType());
@@ -133,7 +135,7 @@ public class LadybugDBConfig {
         };
     }
 
-    private com.thecookiezen.ladybugdb.spring.mapper.RowMapper<LadybugRelation> relationReader() {
+    private RowMapper<LadybugRelation> relationReader() {
         return row -> {
             var rel = row.getRelationship("rel");
             var sourceNode = row.getNode("s");
@@ -154,7 +156,7 @@ public class LadybugDBConfig {
         };
     }
 
-    private com.thecookiezen.ladybugdb.spring.mapper.EntityWriter<LadybugRelation> relationWriter() {
+    private EntityWriter<LadybugRelation> relationWriter() {
         return relation -> {
             Map<String, Object> props = new HashMap<>();
             props.put("relationType", relation.getRelationType());
