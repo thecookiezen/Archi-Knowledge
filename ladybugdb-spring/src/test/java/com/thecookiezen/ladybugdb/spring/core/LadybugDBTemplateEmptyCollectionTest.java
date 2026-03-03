@@ -88,8 +88,11 @@ class LadybugDBTemplateEmptyCollectionTest {
                 "MATCH (e:Entity) RETURN e.name AS name", "name");
         assertEquals(1, names.size());
         assertEquals("test-entity", names.get(0));
-        assertEquals(2, template
-                .queryForStringList("MATCH (e:Entity) RETURN e.observations AS observations", "observations").size());
+
+        Optional<List<String>> observationsFound = template.queryForObject("MATCH (e:Entity) RETURN e",
+                row -> ValueMappers.asStringList(row.getNode("e").get("observations")));
+
+        assertEquals(2, observationsFound.get().size());
     }
 
     @Test
