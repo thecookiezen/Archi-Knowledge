@@ -1,5 +1,6 @@
 package com.thecookiezen.archiledger.loadtests;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -11,12 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import com.thecookiezen.archiledger.application.service.KnowledgeGraphService;
-import com.thecookiezen.archiledger.domain.model.Entity;
-import com.thecookiezen.archiledger.domain.model.EntityId;
-import com.thecookiezen.archiledger.domain.model.EntityType;
-import com.thecookiezen.archiledger.domain.model.Relation;
-import com.thecookiezen.archiledger.domain.model.RelationType;
+import com.thecookiezen.archiledger.application.service.MemoryNoteService;
+import com.thecookiezen.archiledger.domain.model.MemoryNote;
+import com.thecookiezen.archiledger.domain.model.MemoryNoteId;
 
 @Component
 public class PerformanceTestRunner implements CommandLineRunner {
@@ -43,29 +41,29 @@ public class PerformanceTestRunner implements CommandLineRunner {
             "automatically", "manually", "consistently", "periodically", "asynchronously"
     };
 
-    private final KnowledgeGraphService knowledgeGraphService;
+    private final MemoryNoteService memoryNoteService;
 
     @Value("${loadtest.scenario.name:Manual Run}")
     private String scenarioName;
 
-    @Value("${loadtest.entity-count:1000}")
-    private int entityCount;
+    @Value("${loadtest.note-count:1000}")
+    private int noteCount;
 
-    @Value("${loadtest.relations-per-entity:10}")
-    private int relationsPerEntity;
+    @Value("${loadtest.links-per-note:10}")
+    private int linksPerNote;
 
     @Value("${loadtest.batch-size:25}")
     private int batchSize;
 
-    public PerformanceTestRunner(KnowledgeGraphService knowledgeGraphService) {
-        this.knowledgeGraphService = knowledgeGraphService;
+    public PerformanceTestRunner(MemoryNoteService memoryNoteService) {
+        this.memoryNoteService = memoryNoteService;
     }
 
     @Override
     public void run(String... args) {
         log.info("Starting Performance Test Runner...");
 
-        PerformanceScenario scenario = new PerformanceScenario(scenarioName, entityCount, relationsPerEntity,
+        PerformanceScenario scenario = new PerformanceScenario(scenarioName, noteCount, linksPerNote,
                 batchSize);
         PerformanceReport report = new PerformanceReport();
 
@@ -79,7 +77,7 @@ public class PerformanceTestRunner implements CommandLineRunner {
     private void runScenario(PerformanceScenario scenario, PerformanceReport report) {
         log.info("--------------------------------------------------");
         log.info("Running Scenario: {}", scenario.name());
-        log.info("Entities: {}, Relations/Entity: {}", scenario.entityCount(), scenario.relationsPerEntity());
+        log.info("Notes: {}, Links/Note: {}", scenario.noteCount(), scenario.linksPerNote());
 
         long startTime = System.currentTimeMillis();
 
@@ -93,76 +91,81 @@ public class PerformanceTestRunner implements CommandLineRunner {
         long duration = endTime - startTime;
 
         log.info("Finished Scenario: {} in {} ms", scenario.name(), duration);
-        report.addResult(scenario.name(), scenario.entityCount(), scenario.totalRelations(), duration);
+        report.addResult(scenario.name(), scenario.noteCount(), scenario.totalLinks(), duration);
     }
 
-    private String generateRandomObservation() {
+    private String generateRandomContent() {
         java.util.concurrent.ThreadLocalRandom random = java.util.concurrent.ThreadLocalRandom.current();
-        return String.format("%s %s %s %s.",
+        String sentence = String.format("%s %s %s %s.",
                 SUBJECTS[random.nextInt(SUBJECTS.length)],
                 VERBS[random.nextInt(VERBS.length)],
                 OBJECTS[random.nextInt(OBJECTS.length)],
                 ADVERBS[random.nextInt(ADVERBS.length)]);
+        if (random.nextBoolean()) {
+            sentence += " " + String.format("%s %s %s %s.",
+                    SUBJECTS[random.nextInt(SUBJECTS.length)],
+                    VERBS[random.nextInt(VERBS.length)],
+                    OBJECTS[random.nextInt(OBJECTS.length)],
+                    ADVERBS[random.nextInt(ADVERBS.length)]);
+        }
+        return sentence;
     }
 
     private void processBatches(PerformanceScenario scenario) {
         log.info("Generating and saving data in batches...");
-        int batches = (int) Math.ceil((double) scenario.entityCount() / scenario.batchSize());
-        int relationsPerEntity = scenario.relationsPerEntity();
+        int batches = (int) Math.ceil((double) scenario.noteCount() / scenario.batchSize());
+        int linksPerNote = scenario.linksPerNote();
 
         for (int i = 0; i < batches; i++) {
             long batchStartTime = System.currentTimeMillis();
             int start = i * scenario.batchSize();
-            int end = Math.min(start + scenario.batchSize(), scenario.entityCount());
+            int end = Math.min(start + scenario.batchSize(), scenario.noteCount());
 
-            List<Entity> batchEntities = IntStream.range(start, end)
+            List<MemoryNote> batchNotes = IntStream.range(start, end)
                     .mapToObj(idx -> {
                         String uuid = UUID.randomUUID().toString();
-                        String observation = generateRandomObservation();
-                        if (java.util.concurrent.ThreadLocalRandom.current().nextBoolean()) {
-                            observation += " " + generateRandomObservation();
-                        }
-
-                        return new Entity(
-                                new EntityId(uuid),
-                                new EntityType("TestEntity"),
-                                List.of(observation));
+                        return new MemoryNote(
+                                new MemoryNoteId(uuid),
+                                generateRandomContent(),
+                                List.of("load-test", "benchmark"),
+                                "load-test-scenario",
+                                List.of("test"),
+                                List.of(),
+                                Instant.now().toString(),
+                                0);
                     })
                     .toList();
 
-            knowledgeGraphService.createEntities(batchEntities);
+            memoryNoteService.createNotes(batchNotes);
 
-            final int currentBatchSize = batchEntities.size();
-            int createdRelationsCount = 0;
-            if (currentBatchSize > 0 && relationsPerEntity > 0) {
-                List<Relation> batchRelations = new ArrayList<>();
+            final int currentBatchSize = batchNotes.size();
+            int createdLinksCount = 0;
+            if (currentBatchSize > 0 && linksPerNote > 0) {
+                List<MemoryNoteId[]> linkPairs = new ArrayList<>();
                 for (int j = 0; j < currentBatchSize; j++) {
-                    Entity source = batchEntities.get(j);
-                    for (int k = 0; k < relationsPerEntity; k++) {
+                    MemoryNote source = batchNotes.get(j);
+                    for (int k = 0; k < linksPerNote; k++) {
                         int targetIndex = (j + k + 1) % currentBatchSize;
-                        Entity target = batchEntities.get(targetIndex);
+                        MemoryNote target = batchNotes.get(targetIndex);
 
-                        if (!source.name().equals(target.name())) {
-                            batchRelations.add(new Relation(
-                                    source.name(),
-                                    target.name(),
-                                    new RelationType("RELATED_TO")));
+                        if (!source.id().equals(target.id())) {
+                            linkPairs.add(new MemoryNoteId[] { source.id(), target.id() });
                         }
                     }
                 }
-                if (!batchRelations.isEmpty()) {
-                    knowledgeGraphService.createRelations(batchRelations);
-                    createdRelationsCount = batchRelations.size();
+                for (MemoryNoteId[] pair : linkPairs) {
+                    memoryNoteService.addLink(pair[0], pair[1], "RELATED_TO");
                 }
+                createdLinksCount = linkPairs.size();
             }
 
             long batchEndTime = System.currentTimeMillis();
             long batchDuration = batchEndTime - batchStartTime;
-            int totalOps = currentBatchSize + createdRelationsCount;
+            int totalOps = currentBatchSize + createdLinksCount;
             double throughput = batchDuration > 0 ? (double) totalOps / (batchDuration / 1000.0) : 0.0;
 
-            log.info("Batch {}/{}: {} entities, {} relations in {} ms ({} ops/sec)",
-                    i + 1, batches, currentBatchSize, createdRelationsCount, batchDuration,
+            log.info("Batch {}/{}: {} notes, {} links in {} ms ({} ops/sec)",
+                    i + 1, batches, currentBatchSize, createdLinksCount, batchDuration,
                     String.format("%.2f", throughput));
         }
     }

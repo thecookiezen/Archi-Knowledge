@@ -2,10 +2,10 @@ package com.thecookiezen.archiledger.loadtests;
 
 public record PerformanceScenario(
         String name,
-        int entityCount,
-        int relationsPerEntity,
+        int noteCount,
+        int linksPerNote,
         int batchSize) {
-    public int totalRelations() {
-        return entityCount * relationsPerEntity;
+    public int totalLinks() {
+        return noteCount * linksPerNote;
     }
 }
