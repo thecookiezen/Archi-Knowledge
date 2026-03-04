@@ -54,13 +54,13 @@ The graph model is particularly powerful because knowledge isn't flat — concep
 
 | Limitation | Impact | Notes/Mitigation |
 |------------|--------|------------------|
-| **Embedded Neo4j** | Single-process database with limited concurrency | Suitable for small datasets (<100k nodes). Use external Neo4j cluster for production workloads. |
+| **Embedded LadybugDB** | Single-process database with limited concurrency | Suitable for small datasets (<100k nodes). |
 | **Naive vector search** | Linear O(n) similarity matching across all entities | No HNSW or specialized vector index. Performance degrades with dataset size. |
 | **Memory-bound embeddings** | In-memory vector store consumes heap space | Consider external vector DB (Pinecone, Weaviate) for datasets >10k entities. |
 | **No authentication** | All operations are unauthenticated | Intended for local/trusted environments only. |
 | **Heap-limited operations** | Large graph reads (`read_graph`) may OOM | Increase heap (`-Xmx`) or use pagination for large datasets. |
 
-### Performance Expectations (Embedded Neo4j)
+### Performance Expectations (Embedded LadybugDB)
 
 Based on load testing with 512MB heap:
 
@@ -80,7 +80,7 @@ Based on load testing with 512MB heap:
 - **Infrastructure Layer**:
   - **Persistence**: 
     - `InMemoryKnowledgeGraphRepository`: In-memory implementation (default).
-    - `Neo4jKnowledgeGraphRepositoryAdapter`: Neo4j implementation (activates with `neo4j` profile).
+    - `LadybugKnowledgeGraphRepository`: LadybugDB implementation (activates with `ladybugdb` profile).
   - **MCP**: Acts as the primary adapter, exposing tools via the `McpToolAdapter`.
 
 ## Prerequisites
@@ -103,34 +103,31 @@ The server uses streamable HTTP transport by default on port **8080**.
 java -jar mcp/target/archiledger-server-0.0.1-SNAPSHOT.jar
 ```
 
-### With Neo4j (Embedded)
-This mode runs a Neo4j server inside the application process.
+### With LadybugDB (Embedded)
+This mode runs LadybugDB inside the application process.
 
 **Transient (Data lost on restart):**
 ```bash
-java -Dspring.profiles.active=neo4j -Dspring.neo4j.uri=embedded -jar mcp/target/archiledger-server-0.0.1-SNAPSHOT.jar
+java -Dspring.profiles.active=ladybugdb -jar mcp/target/archiledger-server-0.0.1-SNAPSHOT.jar
 ```
 
 **Persistent (Data saved to file):**
-Set the `memory.neo4j.data-dir` property to a directory path.
+Set the `ladybugdb.data-dir` property to a directory path.
 ```bash
-java -Dspring.profiles.active=neo4j \
-     -Dspring.neo4j.uri=embedded \
-     -Dmemory.neo4j.data-dir=./neo4j-data \
+java -Dspring.profiles.active=ladybugdb \
+     -Dladybugdb.data-dir=./ladybugdb-data \
      -jar mcp/target/archiledger-server-0.0.1-SNAPSHOT.jar
 ```
 
-> **💡 Tip: Viewing the Graph with Neo4j Browser**
+> **💡 Tip: Viewing the Graph with Ladybug BugScope**
 >
-> When using embedded Neo4j, you can visualize your graph using [Neo4j Browser](https://github.com/neo4j/neo4j-browser). The embedded database exposes a Bolt endpoint on a dynamic port:
-> 1. **Keep** the Archiledger server running.
-> 2. Check the server logs for the Bolt URI, e.g.: `Driver instance ... created for server uri 'bolt://localhost:35157'`
-> 3. Open Neo4j Browser (default: http://localhost:8080) and connect using the Bolt URI from the logs.
-> 4. Run Cypher queries like `MATCH (n) RETURN n` to explore your knowledge graph.
+> When using embedded Neo4j, you can visualize your graph using [Ladybug BugScope](https://github.com/LadybugDB/bugscope). 
+> 1. Open BugScope (default: http://localhost:8080) and connect using the Ladybug data directory URI.
+> 2. Run Cypher queries like `MATCH (n) RETURN n` to explore your knowledge graph.
 
 ### Running with Docker
 
-The Docker image supports configurable data persistence and Neo4j port configuration.
+The Docker image supports configurable data persistence.
 
 **Transient (Data lost when container stops):**
 ```bash
@@ -138,33 +135,16 @@ docker run -p 8080:8080 registry.hub.docker.com/thecookiezen/archiledger:latest
 ```
 
 **Persistent (Data saved to host filesystem):**
-Mount a local directory to `/data/neo4j` inside the container:
+Mount a local directory to `/data/ladybugdb` inside the container:
 ```bash
-docker run -p 8080:8080 -v /path/to/local/neo4j-data:/data/neo4j registry.hub.docker.com/thecookiezen/archiledger:latest
-```
-
-**With Neo4j Bolt port exposed (for Neo4j Browser access):**
-Expose the Bolt port to connect with external tools like Neo4j Browser:
-```bash
-docker run -p 8080:8080 -p 7687:7687 \
-  -v /path/to/local/neo4j-data:/data/neo4j \
-  registry.hub.docker.com/thecookiezen/archiledger:latest
-```
-
-**Custom Bolt port:**
-Override the default Bolt port (7687) using the `NEO4J_BOLT_PORT` environment variable:
-```bash
-docker run -p 8080:8080 -p 17687:17687 \
-  -e NEO4J_BOLT_PORT=17687 \
-  -v /path/to/local/neo4j-data:/data/neo4j \
-  registry.hub.docker.com/thecookiezen/archiledger:latest
+docker run -p 8080:8080 -v /path/to/local/ladybugdb-data:/data/ladybugdb registry.hub.docker.com/thecookiezen/archiledger:latest
 ```
 
 **Custom data directory (Optional):**
-Override the default data directory path using the `NEO4J_DATA_DIR` environment variable:
+Override the default data directory path using the `LADYBUGDB_DATA_DIR` environment variable:
 ```bash
-docker run -p 8080:8080 -p 7687:7687 \
-  -e NEO4J_DATA_DIR=/custom/data/path \
+docker run -p 8080:8080 \
+  -e LADYBUGDB_DATA_DIR=/custom/data/path \
   -v /path/to/local/data:/custom/data/path \
   registry.hub.docker.com/thecookiezen/archiledger:latest
 ```
@@ -173,13 +153,12 @@ docker run -p 8080:8080 -p 7687:7687 \
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `NEO4J_DATA_DIR` | `/data/neo4j` | Directory where Neo4j stores its data |
-| `NEO4J_BOLT_PORT` | `7687` | Port for Neo4j Bolt connections |
+| `LADYBUGDB_DATA_DIR` | `/data/ladybugdb` | Directory where LadybugDB stores its data |
 
-> **💡 Note:** The data directory at `/data/neo4j` (or your custom path) must be writable by the container user (UID 100, `spring` user). If you encounter permission errors, ensure your host directory has appropriate permissions:
+> **💡 Note:** The data directory at `/data/ladybugdb` (or your custom path) must be writable by the container user (UID 100, `spring` user). If you encounter permission errors, ensure your host directory has appropriate permissions:
 > ```bash
-> mkdir -p /path/to/local/neo4j-data
-> chmod 777 /path/to/local/neo4j-data  # or chown to UID 100
+> mkdir -p /path/to/local/ladybugdb-data
+> chmod 777 /path/to/local/ladybugdb-data  # or chown to UID 100
 > ```
 
 ## Configuration
