@@ -132,7 +132,8 @@ public class PerformanceTestRunner implements CommandLineRunner {
                                 List.of("test"),
                                 List.of(),
                                 Instant.now().toString(),
-                                0);
+                                0,
+                                null);
                     })
                     .toList();
 
