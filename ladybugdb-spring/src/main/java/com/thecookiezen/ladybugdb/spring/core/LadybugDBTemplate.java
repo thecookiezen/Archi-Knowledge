@@ -423,6 +423,7 @@ public class LadybugDBTemplate {
         return converted;
     }
 
+    @SuppressWarnings("resource")
     private Value toValue(Object obj) {
         if (obj == null)
             return Value.createNull();
@@ -433,12 +434,22 @@ public class LadybugDBTemplate {
                 return Value.createNull();
             }
             Value[] values = new Value[c.size()];
-            int i = 0;
-            for (Object o : c) {
-                values[i++] = toValue(o);
-            }
-            try (var lbugList = new LbugList(values)) {
-                return lbugList.getValue();
+            try {
+                int i = 0;
+                for (Object o : c) {
+                    values[i++] = toValue(o);
+                }
+                return new LbugList(values).getValue();
+            } finally {
+                for (Value v : values) {
+                    if (v != null) {
+                        try {
+                            v.close();
+                        } catch (Exception e) {
+                            /* ignore */
+                        }
+                    }
+                }
             }
         }
         return new Value(obj);
