@@ -53,8 +53,6 @@ The Zettelkasten model is powerful because each note is atomic, self-contained, 
 | Limitation | Impact | Notes/Mitigation |
 |------------|--------|------------------|
 | **Embedded LadybugDB** | Single-process database with limited concurrency | Suitable for small datasets (<100k notes). |
-| **Naive vector search** | Linear O(n) similarity matching across all notes | No HNSW or specialized vector index. Performance degrades with dataset size. |
-| **Memory-bound embeddings** | In-memory vector store consumes heap space | Consider external vector DB (Pinecone, Weaviate) for datasets >10k notes. |
 | **No authentication** | All operations are unauthenticated | Intended for local/trusted environments only. |
 | **Heap-limited operations** | Large graph reads (`read_graph`) may OOM | Increase heap (`-Xmx`) or use pagination for large datasets. |
 
@@ -79,7 +77,10 @@ Based on load testing with 512MB heap:
   - **Persistence**:
     - `InMemoryMemoryNoteRepository`: Thread-safe in-memory implementation (default profile).
     - `LadybugMemoryNoteRepository`: LadybugDB graph database implementation (activates with `ladybugdb` profile). Notes are stored as graph nodes, links as `LINKED_TO` relationships.
-  - **Embeddings**: `InMemoryEmbeddingsService` generates vector embeddings from note content for semantic search.
+  - **Vector Search / Storage**:
+    - Note: Generating embeddings from text is always handled by **Spring AI's ONNX Model** (downloading a local embedding model like `all-minilm-l6-v2` to process text into float arrays).
+    - `LadybugEmbeddingsService`: Uses LadybugDB's native vector extension — arrays stored efficiently on disk and indexed with HNSW for ultra-fast approximate nearest neighbor matching.
+    - `LadybugVectorExtensionInitializer`: Installs/loads the vector extension and creates the HNSW index.
   - **MCP**: Acts as the primary adapter, exposing memory tools via the `McpToolAdapter`.
 
 ## Prerequisites
@@ -170,6 +171,16 @@ spring.ai.mcp.server.version=1.0.0
 spring.ai.mcp.server.protocol=STREAMABLE
 server.port=8080
 ```
+
+### Vector Storage & Indexing Provider
+
+Generating vector embeddings (the math part) is handled by Spring AI via an ONNX model.
+
+| Property | Values | Default | Description |
+|----------|--------|---------|-------------|
+| `ladybugdb.extension-dir` | directory path | `~/.lbug/extensions` | Custom directory for LadybugDB extension cache |
+
+Uses LadybugDB's native vector extension — hands off the generated float arrays to LadybugDB which stores them on disk and utilizes an advanced HNSW spatial index for instant semantic queries over millions of nodes.
 
 ## MCP Client Connection
 
