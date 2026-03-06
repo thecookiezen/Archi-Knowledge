@@ -25,12 +25,11 @@ run_scenario() {
     java -Xmx$HEAP -jar "$JAR_FILE" \
     --logging.level.root=ERROR \
     --logging.level.com.thecookiezen.archiledger.loadtests=INFO \
-    --spring.profiles.active=neo4j \
-    --spring.neo4j.uri=embedded \
-    --memory.neo4j.data-dir=/tmp/$SCENARIO_NAME \
+    --spring.profiles.active=ladybugdb \
+    --ladybugdb.data-dir=/tmp/$SCENARIO_NAME \
     --loadtest.scenario.name="$SCENARIO_NAME" \
-    --loadtest.entity-count=$ENTITIES \
-    --loadtest.relations-per-entity=$RELATIONS \
+    --loadtest.note-count=$ENTITIES \
+    --loadtest.links-per-note=$RELATIONS \
     --loadtest.batch-size=25 || { status=$?; echo "Scenario $SCENARIO_NAME FAILED with exit code $status"; }
     
     echo ""
