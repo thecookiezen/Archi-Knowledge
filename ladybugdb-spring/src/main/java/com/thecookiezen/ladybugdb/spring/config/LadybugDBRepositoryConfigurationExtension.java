@@ -41,6 +41,6 @@ public class LadybugDBRepositoryConfigurationExtension extends RepositoryConfigu
     @Override
     public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {
         source.getAttribute("ladybugDBTemplateRef")
-                .ifPresent(ref -> builder.addPropertyReference("template", ref.toString()));
+                .ifPresent(ref -> builder.addPropertyReference("template", ref));
     }
 }
